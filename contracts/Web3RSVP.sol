@@ -131,4 +131,55 @@ contract Web3RSVP {
         require(sent, "Failed to send Ether");
     }
 
+    // confirm the whole group
+    function confirmAllAttendees(bytes32 eventId) external {
+        // look up the event from our struct whit the eventId
+        CreateEvent memory myEvent = idToEvent[eventId];
+
+        // make sure you require that msg.sender is the owner of the event
+        require(msg.sender == myEvent.eventOwner, "NOT AUTHORIZED");
+
+        // confirm each attendee in the rsvp array
+        for (uint8 i = 0; i < myEvent.confirmedRSVPs.length; i++) {
+            confirmAttendee(eventId, myEvent.confirmedRSVPs[i]);
+        }
+    }
+
+    // send unclaimed deposits to event organizer
+    function withdrawUnclaimedDeposits(bytes32 eventId) external {
+        // look up event
+        CreateEvent memory myEvent = idToEvent[eventId];
+
+        // check that the paidOut boolean still equals false
+        // AKA the money hasn't already been paid out
+        require(!myEvent.paidOut, "ALREADY PAID");
+
+        // check if it's been  7days past myEvent.eventTimestamp
+        require(
+            block.timestamp >= (myEvent.eventTimestamp + 7 days),
+            "TOO EARLY"
+        );
+
+        // only the event owner can withdraw
+        require(msg.sender == myEvent.eventOwner, "MUST BE EVENT OWNER");
+
+        // calculate how many people didn't claim by comparing
+        uint256 unclaimed = myEvent.confirmedRSVPs.length - myEvent.claimedRSVPs.length;
+
+        uint256 payout = unclaimed * myEvent.deposit;
+
+        // mark as paid before sending to avoid reentrancy attack
+        myEvent.paidOut = true;
+
+        // send the payout to the owner
+        (bool sent,) = msg.sender.call{value: payout}("");
+
+        // if this fails
+        if (!sent) {
+            myEvent.paidOut = false;
+        }
+
+        require(sent, "Failed to send Ether");
+
+    }
 }
