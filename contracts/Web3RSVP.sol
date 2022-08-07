@@ -18,7 +18,7 @@ contract Web3RSVP {
 
     // when a user creates a new event, this will get called.
     // have to handle
-    // - a uniqe ID
+    // - a unique ID
     // - a reference to who created the event (a wallet address of the creator)
     // - the time of the event (so we know when refunds should become available)
     // - the maximum capacity of attendees for that event
@@ -57,6 +57,36 @@ contract Web3RSVP {
             claimedRSVPs,
             false
         );
+    }
+
+    // requirements for a function to allow users to RSVP to an event
+    // - pass in a unique eventId the user whished to RSVP to
+    // - 1: ensure that the value of their deposit is sufficient for that event's deposit requirement
+    // - 2: ensure that the event hasn't already started based on the timestamp of the event
+    // - 3: ensure that the event is under max capacity
+    function createNewRSVP(bytes32 eventId) external payable {
+        // look up event from our mapping
+        CreateEvent storage myEvent = idToEvent[eventId];
+
+        // 1: transfer deposit to our contract
+        require(msg.value == myEvent.deposit, "NOT ENOUGH");
+
+        // 2
+        require(block.timestamp <= myEvent.eventTimestamp, "ALREADY HAPPENED");
+
+        // 3
+        require(
+            myEvent.confirmedRSVPs.length < myEvent.maxCapacity,
+            "This event has reached the capacity"
+        );
+
+        /// require that msg.sender isn't already in myEvent.claimedRSVPs AKA hasn't already RSVP'd
+        for (uint8 i = 0; i < myEvent.confirmedRSVPs.length; i++) {
+            require(myEvent.confirmedRSVPs[i] != msg.sender, "ALREADY CONFIRMED");
+        }
+
+        myEvent.confirmedRSVPs.push(payable(msg.sender));
+
     }
 
 }
