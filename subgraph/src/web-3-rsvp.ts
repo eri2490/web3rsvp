@@ -8,11 +8,51 @@ import {
 import { Account, RSVP, Confirmation, Event } from "../generated/schema"
 import { integer } from "@protofire/subgraph-toolkit"
 
-export function handleConfirmedAttendee(event: ConfirmedAttendee): void {}
+export function handleConfirmedAttendee(event: ConfirmedAttendee): void {
+  let id = event.params.eventID.toHex() + event.params.attendeeAddress.toHex();
+  let newConfirmation = Confirmation.load(id);
+  let account = getOrCreateAccount(event.params.attendeeAddress);
+  let thisEvent = Event.load(event.params.eventID.toHex());
+  if (newConfirmation == null && thisEvent != null) {
+    newConfirmation = new Confirmation(id);
+    newConfirmation.attendee = account.id;
+    newConfirmation.event = thisEvent.id;
+    newConfirmation.save();
 
-export function handleDepositsPaidOut(event: DepositsPaidOut): void {}
+    thisEvent.totalConfirmedAttendees = integer.increment(
+      thisEvent.totalConfirmedAttendees
+    );
+    thisEvent.save();
 
-export function handleNesRSVP(event: NesRSVP): void {}
+    account.totalAttendedEvents = integer.increment(
+      account.totalAttendedEvents
+    );
+    account.save();
+  }
+}
+
+export function handleDepositsPaidOut(event: DepositsPaidOut): void {
+  let thisEvent = Event.load(event.params.eventID.toHex());
+  if (thisEvent) {
+    thisEvent.paidOut = true;
+    thisEvent.save();
+  }
+}
+
+export function handleNesRSVP(event: NesRSVP): void {
+  let newRSVP = RSVP.load(event.transaction .from.toHex());
+  let account = getOrCreateAccount(event.params.attendeeAddress);
+  let thisEvent = Event.load(event.params.eventID.toHex());
+
+  if (newRSVP == null && thisEvent != null) {
+    newRSVP = new RSVP(event.transaction.from.toHex());
+    newRSVP.attendee = account.id;
+    newRSVP.event = thisEvent.id;
+    newRSVP.save();
+    account.totalRSVPs = integer.increment(account.totalRSVPs);
+    account.save();
+  }
+}
 
 export function handleNewEventCreated(event: NewEventCreated): void {
   let newEvent = Event.load(event.params.eventID.toHex());
@@ -62,7 +102,18 @@ export function handleNewEventCreated(event: NewEventCreated): void {
         }
        }
     }
-    
+
     newEvent.save()
   }
+}
+
+const getOrCreateAccount = (address: Address) => {
+  let account = Account.load(address.toHex());
+  if (account == null) {
+    account = new Account(address.toHex());
+    account.totalRSVPs = integer.ZERO;
+    account.totalAttendedEvents = integer.ZERO;
+    account.save();
+  }
+  return account;
 }
