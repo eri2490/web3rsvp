@@ -107,7 +107,7 @@ export function handleNewEventCreated(event: NewEventCreated): void {
   }
 }
 
-const getOrCreateAccount = (address: Address) => {
+function getOrCreateAccount (address: Address):Account {
   let account = Account.load(address.toHex());
   if (account == null) {
     account = new Account(address.toHex());
