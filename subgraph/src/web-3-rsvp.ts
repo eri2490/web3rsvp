@@ -8,7 +8,7 @@ import {
 import { Account, RSVP, Confirmation, Event } from "../generated/schema"
 import { integer } from "@protofire/subgraph-toolkit"
 
-export const handleConfirmedAttendee = (event: ConfirmedAttendee) => {
+export function handleConfirmedAttendee(event: ConfirmedAttendee): void {
   let id = event.params.eventID.toHex() + event.params.attendeeAddress.toHex();
   let newConfirmation = Confirmation.load(id);
   let account = getOrCreateAccount(event.params.attendeeAddress);
@@ -31,7 +31,7 @@ export const handleConfirmedAttendee = (event: ConfirmedAttendee) => {
   }
 }
 
-export const handleDepositsPaidOut = (event: DepositsPaidOut) => {
+export function handleDepositsPaidOut(event: DepositsPaidOut): void {
   let thisEvent = Event.load(event.params.eventID.toHex());
   if (thisEvent) {
     thisEvent.paidOut = true;
@@ -39,7 +39,7 @@ export const handleDepositsPaidOut = (event: DepositsPaidOut) => {
   }
 }
 
-export const handleNesRSVP = (event: NesRSVP) => {
+export function handleNesRSVP(event: NesRSVP): void {
   let newRSVP = RSVP.load(event.transaction .from.toHex());
   let account = getOrCreateAccount(event.params.attendeeAddress);
   let thisEvent = Event.load(event.params.eventID.toHex());
@@ -54,7 +54,7 @@ export const handleNesRSVP = (event: NesRSVP) => {
   }
 }
 
-export const handleNewEventCreated = (event: NewEventCreated) => {
+export function handleNewEventCreated(event: NewEventCreated): void {
   let newEvent = Event.load(event.params.eventID.toHex());
   if (newEvent == null) {
     newEvent = new Event(event.params.eventID.toHex());
