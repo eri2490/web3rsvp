@@ -6,7 +6,9 @@ coverage.json
 typechain
 typechain-types
 
-#Hardhat files
+# Hardhat files
 contract/cache
 contract/artifacts
 
+# subgraph files
+subgraph/build
