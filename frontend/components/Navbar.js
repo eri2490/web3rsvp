@@ -33,7 +33,7 @@ export default function Navbar() {
                 </a>
               </Link>
               {account
-                ? (<Navmenu account={account} disconnect={disconnect()} />)
+                ? (<Navmenu account={account} disconnect={disconnect} />)
                 : (<ConnectButton />)
               }
             </div>
