@@ -327,7 +327,7 @@ export default function CreateEvent() {
           <div>
             Success! Please wait a few minutes, then check out your event page{" "}
             <span className="font-bold">
-              <Link href={`/event/${evnetID}`}>here</Link>
+              <Link href={`/event/${eventID}`}>here</Link>
             </span>
           </div>
         )}
