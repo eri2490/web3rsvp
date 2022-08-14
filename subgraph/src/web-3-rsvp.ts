@@ -63,6 +63,7 @@ export function handleNewEventCreated(event: NewEventCreated): void {
     newEvent.eventTimestamp = event.params.eventTimestamp;
     newEvent.maxCapacity = event.params.maxCapacity;
     newEvent.deposit = event.params.deposit;
+    newEvent.paidOut = false;
     newEvent.totalRSVPs = integer.ZERO;
     newEvent.totalConfirmedAttendees = integer.ZERO;
 
