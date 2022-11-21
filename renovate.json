@@ -7,5 +7,12 @@
   "dependencyDashboard": false,
   "schedule": [
     "before 12am on Monday"
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch", "minor"],
+      "excludePackageNames": ["typescript"],
+      "groupName": "all minor and patch dependencies"
+    }
   ]
 }
