@@ -5,9 +5,6 @@
     "config:base"
   ],
   "dependencyDashboard": false,
-  "schedule": [
-    "before 14pm on Monday"
-  ],
   "packageRules": [
     {
       "matchUpdateTypes": ["patch", "minor"],
